@@ -1,0 +1,64 @@
+---
+# Source: helm-guestbook/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-helm-guestbook
+  labels:
+    app: helm-guestbook
+    chart: helm-guestbook-0.1.0
+    release: RELEASE-NAME
+    heritage: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: helm-guestbook
+    release: RELEASE-NAME
+---
+# Source: helm-guestbook/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-helm-guestbook
+  labels:
+    app: helm-guestbook
+    chart: helm-guestbook-0.1.0
+    release: RELEASE-NAME
+    heritage: Helm
+  namespace: demo
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: helm-guestbook
+      release: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app: helm-guestbook
+        release: RELEASE-NAME
+    spec:
+      containers:
+        - name: helm-guestbook
+          image: "gcr.io/heptio-images/ks-guestbook-demo:0.1"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
